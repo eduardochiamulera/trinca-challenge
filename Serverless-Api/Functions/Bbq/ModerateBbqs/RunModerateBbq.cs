@@ -4,6 +4,7 @@ using Domain.Events;
 using Domain.Repositories;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using System.Net;
 
 namespace Serverless_Api
 {
@@ -27,21 +28,29 @@ namespace Serverless_Api
 
             var bbq = await _repository.GetAsync(id);
 
+            if(bbq == null)
+            {
+				return await req.CreateResponse(HttpStatusCode.NotFound, "Bbq not found.");
+			}
+
             bbq.Apply(new BbqStatusUpdated(moderationRequest.GonnaHappen, moderationRequest.TrincaWillPay));
 
             var lookups = await _snapshots.AsQueryable<Lookups>("Lookups").SingleOrDefaultAsync();
 
-            foreach (var personId in lookups.PeopleIds)
+            if (moderationRequest.GonnaHappen)
             {
-                var person = await _persons.GetAsync(personId);
-                var @event = new PersonHasBeenInvitedToBbq(bbq.Id, bbq.Date, bbq.Reason);
-                person.Apply(@event);
-                await _persons.SaveAsync(person);
+                foreach (var personId in lookups.PeopleIds)
+                {
+                    var person = await _persons.GetAsync(personId);
+                    var @event = new PersonHasBeenInvitedToBbq(bbq.Id, bbq.Date, bbq.Reason);
+                    person.Apply(@event);
+                    await _persons.SaveAsync(person);
+                }
             }
 
             await _repository.SaveAsync(bbq);
 
-            return await req.CreateResponse(System.Net.HttpStatusCode.OK, bbq.TakeSnapshot());
+            return await req.CreateResponse(HttpStatusCode.OK, bbq.TakeSnapshot());
         }
     }
 }
