@@ -60,6 +60,7 @@ namespace Serverless_Api
 
 			if (bbq.BbqConfirmation < Constants.NumeroConfirmacoesAlteraStatusBbq && bbq.Status != BbqStatus.PendingConfirmations)
 			{
+				bbq = await _bbqRepository.GetAsync(inviteId);
 				bbq.Apply(new BbqStatusUpdatedAutomatic(BbqStatus.PendingConfirmations));
 				await _bbqRepository.SaveAsync(bbq);
 			}
