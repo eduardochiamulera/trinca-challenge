@@ -33,6 +33,11 @@ namespace Serverless_Api
 				return await req.CreateResponse(HttpStatusCode.BadRequest, "input is required.");
 			}
 
+			if(input.Date <= DateTime.UtcNow)
+			{
+				return await req.CreateResponse(HttpStatusCode.BadRequest, "Date for the barbecue is invalid.");
+			}
+
 			var churras = new Bbq();
 
 			churras.Apply(new ThereIsSomeoneElseInTheMood(Guid.NewGuid(), input.Date, input.Reason, input.IsTrincasPaying));
