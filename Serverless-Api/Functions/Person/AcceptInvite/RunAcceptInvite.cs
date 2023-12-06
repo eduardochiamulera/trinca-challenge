@@ -3,6 +3,7 @@ using Domain.Entities;
 using Domain.Repositories;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Domain;
 
 namespace Serverless_Api
 {
@@ -10,27 +11,51 @@ namespace Serverless_Api
     {
         private readonly Person _user;
         private readonly IPersonRepository _repository;
-        public RunAcceptInvite(IPersonRepository repository, Person user)
-        {
-            _user = user;
-           _repository = repository;
-        }
+		private readonly IBbqRepository _bbqRepository;
 
-        [Function(nameof(RunAcceptInvite))]
+		public RunAcceptInvite(IPersonRepository repository, Person user, IBbqRepository bbqRepository)
+		{
+			_user = user;
+			_repository = repository;
+			_bbqRepository = bbqRepository;
+		}
+
+		[Function(nameof(RunAcceptInvite))]
         public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Function, "put", Route = "person/invites/{inviteId}/accept")] HttpRequestData req, string inviteId)
         {
+            var bbq = await _bbqRepository.GetAsync(inviteId);
+
+            if(bbq.Status == BbqStatus.ItsNotGonnaHappen)
+            {
+                return await req.CreateResponse(System.Net.HttpStatusCode.OK, "Bbq Its Not Gonna Happen.");
+            }
+            
             var answer = await req.Body<InviteAnswer>();
 
             var person = await _repository.GetAsync(_user.Id);
-           
-            person.Apply(new InviteWasAccepted { InviteId = inviteId, IsVeg = answer.IsVeg, PersonId = person.Id });
+
+            if(person.Invites.Any(x => x.Id == inviteId && x.Status == InviteStatus.Accepted))
+            {
+				return await req.CreateResponse(System.Net.HttpStatusCode.OK, "Invite already accepted.");
+			}
+
+            var @event = new InviteWasAccepted { InviteId = inviteId, IsVeg = answer.IsVeg, PersonId = person.Id };
+
+			person.Apply(@event);
 
             await _repository.SaveAsync(person);
 
+            bbq.Apply(@event);
             //implementar efeito do aceite do convite no churrasco
             //quando tiver 7 pessoas ele está confirmado
+            if(bbq.BbqConfirmation == Constants.NumeroConfirmacoesAlteraStatusBbq)
+            {
+                bbq.Apply(new BbqStatusUpdatedAutomatic(BbqStatus.Confirmed));
+            }
 
-            return await req.CreateResponse(System.Net.HttpStatusCode.OK, person.TakeSnapshot());
+			await _bbqRepository.SaveAsync(bbq);
+
+			return await req.CreateResponse(System.Net.HttpStatusCode.OK, person.TakeSnapshot());
         }
     }
 }
