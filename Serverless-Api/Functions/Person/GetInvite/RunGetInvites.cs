@@ -1,6 +1,6 @@
 using Domain;
 using Domain.Entities;
-using Domain.Repositories;
+using Domain.Repositories.Interfaces;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 

@@ -9,6 +9,7 @@ using Domain.Repositories;
 using Microsoft.Azure.Cosmos;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
+using Domain.Repositories.Interfaces;
 
 namespace Domain
 {

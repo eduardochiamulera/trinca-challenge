@@ -2,7 +2,7 @@
 using Domain.Entities;
 using Domain.Enumerations;
 using Domain.Events;
-using Domain.Repositories;
+using Domain.Repositories.Interfaces;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using static Serverless_Api.RunAcceptInvite;

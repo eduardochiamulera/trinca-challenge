@@ -1,7 +1,7 @@
 ﻿using Eveneum;
 using System.Threading.Tasks;
 
-namespace Domain.Repositories
+namespace Domain.Repositories.Interfaces
 {
     public interface IStreamRepository<T> where T : AggregateRoot, new()
     {

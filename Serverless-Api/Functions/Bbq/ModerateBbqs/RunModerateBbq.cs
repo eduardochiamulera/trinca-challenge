@@ -1,14 +1,14 @@
 using CrossCutting;
 using Domain.Entities;
 using Domain.Events;
-using Domain.Repositories;
+using Domain.Repositories.Interfaces;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using System.Net;
 
 namespace Serverless_Api
 {
-	public partial class RunModerateBbq
+    public partial class RunModerateBbq
 	{
 		private readonly SnapshotStore _snapshots;
 		private readonly IPersonRepository _persons;

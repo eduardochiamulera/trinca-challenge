@@ -1,10 +1,10 @@
 ﻿using Domain.Events;
 using Domain.Entities;
-using Domain.Repositories;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Domain;
 using Domain.Enumerations;
+using Domain.Repositories.Interfaces;
 
 namespace Serverless_Api
 {

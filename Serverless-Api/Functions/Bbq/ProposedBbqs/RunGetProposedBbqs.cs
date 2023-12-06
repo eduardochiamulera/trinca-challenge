@@ -1,7 +1,7 @@
 using System.Net;
 using Domain.Entities;
 using Domain.Enumerations;
-using Domain.Repositories;
+using Domain.Repositories.Interfaces;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 

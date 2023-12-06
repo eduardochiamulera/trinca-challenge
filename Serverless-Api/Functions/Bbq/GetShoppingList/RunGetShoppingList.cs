@@ -1,6 +1,6 @@
 using CrossCutting;
 using Domain.Entities;
-using Domain.Repositories;
+using Domain.Repositories.Interfaces;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using System.Net;
@@ -8,7 +8,7 @@ using static Serverless_Api.Functions.Bbq.GetShoppingList.RunGetShoppingList;
 
 namespace Serverless_Api
 {
-	public partial class RunGetShoppingList
+    public partial class RunGetShoppingList
 	{
 		private readonly Person _user;
 		private readonly SnapshotStore _snapshots;
