@@ -17,7 +17,7 @@ namespace Domain.Entities
 			ShoppingList = new ShoppingList();
 		}
 
-		public void When(ThereIsSomeoneElseInTheMood @event)
+		internal void When(ThereIsSomeoneElseInTheMood @event)
 		{
 			Id = @event.Id.ToString();
 			Date = @event.Date;
@@ -25,12 +25,12 @@ namespace Domain.Entities
 			Status = BbqStatus.New;
 		}
 
-		public void When(BbqStatusUpdatedAutomatic @event)
+		internal void When(BbqStatusUpdatedAutomatic @event)
 		{
 			Status = @event.Status;
 		}
 
-		public void When(BbqStatusUpdated @event)
+		internal void When(BbqStatusUpdated @event)
 		{
 			if(@event.Status == BbqStatus.ItsNotGonnaHappen)
 			{
@@ -42,7 +42,7 @@ namespace Domain.Entities
 			IsTrincasPaying = @event.TrincaWillPay;
 		}
 
-		public void When(InviteWasDeclined @event)
+		internal void When(InviteWasDeclined @event)
 		{
 			if (BbqConfirmation == default)
 			{
@@ -60,7 +60,7 @@ namespace Domain.Entities
 			}
 		}
 
-		public void When(InviteWasAccepted @event)
+		internal void When(InviteWasAccepted @event)
 		{
 			BbqConfirmation += 1;
 			if (@event.IsVeg)
