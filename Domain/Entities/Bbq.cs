@@ -1,10 +1,11 @@
-﻿using Domain.Events;
+﻿using Domain.Enumerations;
+using Domain.Events;
 using System;
 using System.Dynamic;
 
 namespace Domain.Entities
 {
-	public class Bbq : AggregateRoot
+    public class Bbq : AggregateRoot
 	{
 		public string Reason { get; set; }
 		public BbqStatus Status { get; set; }

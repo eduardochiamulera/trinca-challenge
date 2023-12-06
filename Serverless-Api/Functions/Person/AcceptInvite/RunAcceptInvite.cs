@@ -4,10 +4,11 @@ using Domain.Repositories;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Domain;
+using Domain.Enumerations;
 
 namespace Serverless_Api
 {
-	public partial class RunAcceptInvite
+    public partial class RunAcceptInvite
 	{
 		private readonly Person _user;
 		private readonly IPersonRepository _repository;

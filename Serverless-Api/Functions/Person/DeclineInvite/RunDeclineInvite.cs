@@ -1,5 +1,6 @@
 ﻿using Domain;
 using Domain.Entities;
+using Domain.Enumerations;
 using Domain.Events;
 using Domain.Repositories;
 using Microsoft.Azure.Functions.Worker;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Domain.Enumerations;
+using System;
 
 namespace Domain.Entities
 {
@@ -8,12 +9,5 @@ namespace Domain.Entities
         public string Bbq { get; set; }
         public InviteStatus Status { get; set; }
         public DateTime Date { get; set; }
-    }
-
-    public enum InviteStatus
-    {
-        Pending,
-        Accepted,
-        Declined
     }
 }

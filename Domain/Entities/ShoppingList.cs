@@ -1,6 +1,8 @@
-﻿namespace Domain.Entities
+﻿using Domain.Enumerations;
+
+namespace Domain.Entities
 {
-	public class ShoppingList
+    public class ShoppingList
 	{
 		public decimal Vegetables { get; private set; }
 		public decimal Meat { get; private set; }
@@ -27,11 +29,5 @@
 				Meat
 			};
 		}
-	}
-
-	public enum ShoppingListCalculationType
-	{
-		Add,
-		Decrement
 	}
 }
