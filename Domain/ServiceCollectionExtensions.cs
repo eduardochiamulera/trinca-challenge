@@ -34,7 +34,7 @@ namespace Domain
 
             client.GetDatabase(DATABASE)
                 .GetContainer("Lookups")
-                .UpsertItemAsync(new Lookups { PeopleIds = Data.People.Where(x => !x.IsCoOwner).Select(o => o.Id).ToList(), ModeratorIds = Data.People.Where(p => p.IsCoOwner).Select(o => o.Id).ToList() })
+                .UpsertItemAsync(new Lookups { PeopleIds = Data.People.Select(o => o.Id).ToList(), ModeratorIds = Data.People.Where(p => p.IsCoOwner).Select(o => o.Id).ToList() })
                 .GetAwaiter()
                 .GetResult();
 
