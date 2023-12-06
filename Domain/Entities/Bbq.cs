@@ -32,6 +32,12 @@ namespace Domain.Entities
 
 		public void When(BbqStatusUpdated @event)
 		{
+			if(@event.Status == BbqStatus.ItsNotGonnaHappen)
+			{
+				ShoppingList = new ShoppingList();
+				BbqConfirmation= 0;
+			}
+
 			Status = @event.Status;
 			IsTrincasPaying = @event.TrincaWillPay;
 		}
