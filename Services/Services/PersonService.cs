@@ -97,7 +97,7 @@ namespace Services.Services
 
 			if (person.Invites.Any(x => x.Id == inviteId && x.Status == InviteStatus.Declined))
 			{
-				return ServiceResult<PersonResponse>.Success(null, "Invite already accepted.");
+				return ServiceResult<PersonResponse>.Success(null, "Invite already declined.");
 			}
 
 			var @event = new InviteWasDeclined { InviteId = inviteId, IsVeg = input.IsVeg, PersonId = person.Id };
