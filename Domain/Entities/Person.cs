@@ -1,4 +1,5 @@
-﻿using Domain.Enumerations;
+﻿using CrossCutting.Models;
+using Domain.Enumerations;
 using Domain.Events;
 using System;
 using System.Collections.Generic;
@@ -48,16 +49,16 @@ namespace Domain.Entities
             invite.Status = InviteStatus.Declined;
         }
 
-        public object? TakeSnapshot()
+        public PersonResponse TakeSnapshot()
         {
-            return new
-            {
-                Id,
-                Name,
-                IsCoOwner,
-                Invites = Invites.Where(o => o.Status != InviteStatus.Declined)
-                                .Where(o => o.Date > DateTime.Now)
-                                .Select(o => new { o.Id, o.Bbq, Status = o.Status.ToString() })
+            return new PersonResponse
+			{
+                Id = Id,
+                Name = Name,
+                IsCoOwner = IsCoOwner,
+                Invites = Invites.Where(i => i.Status != InviteStatus.Declined)
+                                .Where(i => i.Date > DateTime.Now)
+                                .Select(i => new InviteResponse { Id = i.Id, Bbq = i.Bbq, Status = i.Status.ToString() })
             };
         }
     }

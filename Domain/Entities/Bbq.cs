@@ -1,11 +1,11 @@
-﻿using Domain.Enumerations;
+﻿using CrossCutting.Models;
+using Domain.Enumerations;
 using Domain.Events;
 using System;
-using System.Dynamic;
 
 namespace Domain.Entities
 {
-    public class Bbq : AggregateRoot
+	public class Bbq : AggregateRoot
 	{
 		public string Reason { get; set; }
 		public BbqStatus Status { get; set; }
@@ -75,13 +75,13 @@ namespace Domain.Entities
 		}
 
 
-		public object TakeSnapshot()
+		public BbqResponse TakeSnapshot()
 		{
-            return new
-            {
-                Id,
-                Date,
-                IsTrincasPaying,
+            return new BbqResponse
+			{
+                Id = Id,
+                Date = Date,
+                IsTrincasPaying = IsTrincasPaying,
                 Status = Status.ToString()
             };
 		}

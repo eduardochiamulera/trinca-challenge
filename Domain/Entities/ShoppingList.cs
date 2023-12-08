@@ -1,8 +1,9 @@
-﻿using Domain.Enumerations;
+﻿using CrossCutting.Models;
+using Domain.Enumerations;
 
 namespace Domain.Entities
 {
-    public class ShoppingList
+	public class ShoppingList
 	{
 		public decimal Vegetables { get; private set; }
 		public decimal Meat { get; private set; }
@@ -21,12 +22,12 @@ namespace Domain.Entities
 			}
 		}
 
-		public object? TakeSnapshot()
+		public ShoppingListResponse TakeSnapshot()
 		{
-			return new
+			return new ShoppingListResponse
 			{
-				Vegetables,
-				Meat
+				Vegetables = Vegetables,
+				Meat = Meat
 			};
 		}
 	}
