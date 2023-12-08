@@ -12,7 +12,7 @@ namespace System
 
             if (body != null)
             {
-                await response.WriteAsJsonAsync(body);
+                await response.WriteAsJsonAsync(body, statusCode);
             }
             return response;
         }
