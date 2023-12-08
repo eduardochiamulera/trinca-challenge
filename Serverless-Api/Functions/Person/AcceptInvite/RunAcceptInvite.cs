@@ -1,64 +1,38 @@
-﻿using Domain.Events;
+﻿using CrossCutting.Requests;
 using Domain.Entities;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Domain;
-using Domain.Enumerations;
-using Domain.Repositories.Interfaces;
+using Services.Services.Interfaces;
+using System.Net;
 
 namespace Serverless_Api
 {
-    public partial class RunAcceptInvite
+	public partial class RunAcceptInvite
 	{
 		private readonly Person _user;
-		private readonly IPersonRepository _repository;
-		private readonly IBbqRepository _bbqRepository;
+		private readonly IPersonService _personService;
 
-		public RunAcceptInvite(IPersonRepository repository, Person user, IBbqRepository bbqRepository)
+		public RunAcceptInvite(Person user, IPersonService personService)
 		{
 			_user = user;
-			_repository = repository;
-			_bbqRepository = bbqRepository;
+			_personService = personService;
 		}
+
 
 		[Function(nameof(RunAcceptInvite))]
 		public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Function, "put", Route = "person/invites/{inviteId}/accept")] HttpRequestData req, string inviteId)
 		{
-			var bbq = await _bbqRepository.GetAsync(inviteId);
+			var answer = await req.Body<InviteAnswerRequest>();
 
-			if (bbq.Status == BbqStatus.ItsNotGonnaHappen)
+			var response = await _personService.AcceptInvite(_user.Id, inviteId, answer);
+
+			if (!response.IsSuccess)
 			{
-				return await req.CreateResponse(System.Net.HttpStatusCode.OK, "Bbq Its Not Gonna Happen.");
+				return await req.CreateResponse(response.Error.Code, response);
 			}
 
-			var answer = await req.Body<InviteAnswer>();
+			return await req.CreateResponse(HttpStatusCode.OK, response);
 
-			var person = await _repository.GetAsync(_user.Id);
-
-			if (person.Invites.Any(x => x.Id == inviteId && x.Status == InviteStatus.Accepted))
-			{
-				return await req.CreateResponse(System.Net.HttpStatusCode.OK, "Invite already accepted.");
-			}
-
-			var @event = new InviteWasAccepted { InviteId = inviteId, IsVeg = answer.IsVeg, PersonId = person.Id };
-
-			person.Apply(@event);
-
-			await _repository.SaveAsync(person);
-
-			bbq.Apply(@event);
-			await _bbqRepository.SaveAsync(bbq);
-			//implementar efeito do aceite do convite no churrasco
-			//quando tiver 7 pessoas ele está confirmado
-			if (bbq.BbqConfirmation >= Constants.NumeroConfirmacoesAlteraStatusBbq && bbq.Status != BbqStatus.Confirmed)
-			{
-				bbq = await _bbqRepository.GetAsync(inviteId);
-				bbq.Apply(new BbqStatusUpdatedAutomatic(BbqStatus.Confirmed));
-				await _bbqRepository.SaveAsync(bbq);
-			}
-			
-
-			return await req.CreateResponse(System.Net.HttpStatusCode.OK, person.TakeSnapshot());
 		}
 	}
 }

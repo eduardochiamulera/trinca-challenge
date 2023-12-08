@@ -1,24 +1,18 @@
-using CrossCutting;
-using Domain.Entities;
-using Domain.Events;
-using Domain.Repositories.Interfaces;
+using CrossCutting.Requests;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Services.Services.Interfaces;
 using System.Net;
 
 namespace Serverless_Api
 {
-    public partial class RunModerateBbq
+	public partial class RunModerateBbq
 	{
-		private readonly SnapshotStore _snapshots;
-		private readonly IPersonRepository _persons;
-		private readonly IBbqRepository _repository;
+		private readonly IBbqService _bbqService;
 
-		public RunModerateBbq(IBbqRepository repository, SnapshotStore snapshots, IPersonRepository persons)
+		public RunModerateBbq(IBbqService bbqService)
 		{
-			_persons = persons;
-			_snapshots = snapshots;
-			_repository = repository;
+			_bbqService = bbqService;
 		}
 
 		[Function(nameof(RunModerateBbq))]
@@ -26,44 +20,15 @@ namespace Serverless_Api
 		{
 			var moderationRequest = await req.Body<ModerateBbqRequest>();
 
-			var bbq = await _repository.GetAsync(id);
+			var response = await _bbqService.ModerateBbq(id, moderationRequest);
 
-			if (bbq == null)
+			if (!response.IsSuccess)
 			{
-				return await req.CreateResponse(HttpStatusCode.NotFound, "Bbq not found.");
-			}
-
-			bbq.Apply(new BbqStatusUpdated(moderationRequest.GonnaHappen, moderationRequest.TrincaWillPay));
-			await _repository.SaveAsync(bbq);
-
-			var lookups = await _snapshots.AsQueryable<Lookups>("Lookups").SingleOrDefaultAsync();
-
-			if (moderationRequest.GonnaHappen)
-			{
-				foreach (var personId in lookups.PeopleIds)
-				{
-					var person = await _persons.GetAsync(personId);
-					if (!person.IsCoOwner)
-					{
-						var @event = new PersonHasBeenInvitedToBbq(bbq.Id, bbq.Date, bbq.Reason);
-						person.Apply(@event);
-						await _persons.SaveAsync(person);
-					}
-				}
-			}
-			else
-			{
-				foreach (var personId in lookups.PeopleIds)
-				{
-					var person = await _persons.GetAsync(personId);
-					var @event = new InviteWasDeclined { InviteId = bbq.Id, PersonId = person.Id } ;
-					person.Apply(@event);
-					await _persons.SaveAsync(person);
-				}
+				return await req.CreateResponse(response.Error.Code, response);
 			}
 
 
-			return await req.CreateResponse(HttpStatusCode.OK, bbq.TakeSnapshot());
+			return await req.CreateResponse(HttpStatusCode.OK, response);
 		}
 	}
 }

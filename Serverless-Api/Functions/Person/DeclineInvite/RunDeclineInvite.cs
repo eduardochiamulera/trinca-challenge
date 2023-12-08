@@ -1,72 +1,37 @@
-﻿using Domain;
+﻿using CrossCutting.Requests;
 using Domain.Entities;
-using Domain.Enumerations;
-using Domain.Events;
-using Domain.Repositories.Interfaces;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using static Serverless_Api.RunAcceptInvite;
+using Services.Services.Interfaces;
+using System.Net;
 
 namespace Serverless_Api
 {
-    public partial class RunDeclineInvite
+	public partial class RunDeclineInvite
     {
         private readonly Person _user;
-        private readonly IPersonRepository _repository;
-		private readonly IBbqRepository _bbqRepository;
+		private readonly IPersonService _personService;
 
-		public RunDeclineInvite(Person user, IPersonRepository repository, IBbqRepository bbqRepository)
+		public RunDeclineInvite(Person user, IPersonService personService)
 		{
 			_user = user;
-			_repository = repository;
-			_bbqRepository = bbqRepository;
+			_personService = personService;
 		}
+
 
 		[Function(nameof(RunDeclineInvite))]
         public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Function, "put", Route = "person/invites/{inviteId}/decline")] HttpRequestData req, string inviteId)
         {
-			var answer = await req.Body<InviteAnswer>();
+			var answer = await req.Body<InviteAnswerRequest>();
 
-			var person = await _repository.GetAsync(_user.Id);
+			var response = await _personService.DeclineInvite(_user.Id, inviteId, answer);
 
-            if (person == null)
-                return await req.CreateResponse(System.Net.HttpStatusCode.NotFound, "Person Not Found.");
-
-			if(person.Invites.Any(x => x.Id == inviteId && x.Status == InviteStatus.Declined))
+			if (!response.IsSuccess)
 			{
-				return await req.CreateResponse(System.Net.HttpStatusCode.NoContent, "Invite already declined.");
+				return await req.CreateResponse(response.Error.Code, response);
 			}
 
-			var bbq = await _bbqRepository.GetAsync(inviteId);
-
-            if(bbq == null)
-            {
-				return await req.CreateResponse(System.Net.HttpStatusCode.NotFound, "Bbq Not Found.");
-			}
-
-			if(bbq.Status == BbqStatus.ItsNotGonnaHappen)
-			{
-				return await req.CreateResponse(System.Net.HttpStatusCode.OK, "Bbq its not gonna happen.");
-			}
-
-			var @event = new InviteWasDeclined { InviteId = inviteId, PersonId = person.Id, IsVeg = answer.IsVeg };
-
-			person.Apply(@event);
-
-            await _repository.SaveAsync(person);
-			//Implementar impacto da recusa do convite no churrasco caso ele já tivesse sido aceito antes
-
-			bbq.Apply(@event);
-			await _bbqRepository.SaveAsync(bbq);
-
-			if (bbq.BbqConfirmation < Constants.NumeroConfirmacoesAlteraStatusBbq && bbq.Status != BbqStatus.PendingConfirmations)
-			{
-				bbq = await _bbqRepository.GetAsync(inviteId);
-				bbq.Apply(new BbqStatusUpdatedAutomatic(BbqStatus.PendingConfirmations));
-				await _bbqRepository.SaveAsync(bbq);
-			}
-
-			return await req.CreateResponse(System.Net.HttpStatusCode.OK, person.TakeSnapshot());
-        }
+			return await req.CreateResponse(HttpStatusCode.OK, response);
+		}
     }
 }
