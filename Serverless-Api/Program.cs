@@ -2,12 +2,14 @@ using Domain;
 using CrossCutting;
 using Microsoft.Extensions.Hosting;
 using Serverless_Api.Middlewares;
+using Services;
 
 var host = new HostBuilder()
     .ConfigureServices(services =>
     {
         services.AddEventStore();
-        services.AddDomainDependencies();
+        services.AddServicesDependencies();
+		services.AddDomainDependencies();
     })
     .ConfigureFunctionsWorkerDefaults(builder => builder.UseMiddleware<AuthMiddleware>())
     .Build();
